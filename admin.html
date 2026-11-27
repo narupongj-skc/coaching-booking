@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>หน้าผู้จัดการ — จองเวลา Coaching</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="wrap">
+    <header class="top">
+      <h1>หน้าผู้จัดการ</h1>
+      <p>กำหนดเวลาว่าง ดูการจอง และจัดการทีมของคุณ · <a href="index.html">ไปหน้าจองของทีม</a></p>
+    </header>
+
+    <!-- Login -->
+    <section class="card" id="login">
+      <h2>เข้าสู่ระบบ</h2>
+      <form id="loginForm" class="row">
+        <div class="grow">
+          <label for="user">ชื่อผู้ใช้</label>
+          <input type="text" id="user" autocomplete="username" autocapitalize="off" spellcheck="false" required>
+        </div>
+        <div class="grow">
+          <label for="pw">รหัสผ่าน</label>
+          <input type="password" id="pw" autocomplete="current-password" required>
+        </div>
+        <button class="btn" type="submit">เข้าสู่ระบบ</button>
+      </form>
+      <p class="hint">ครั้งแรกให้ใช้<strong>รหัสพนักงาน</strong>เป็นทั้งชื่อผู้ใช้และรหัสผ่าน แล้วเปลี่ยนรหัสผ่านที่แท็บ "โปรไฟล์"</p>
+    </section>
+
+    <!-- App -->
+    <div id="app" hidden>
+      <div class="mgr-switch" id="mgrSwitch" hidden>
+        <label for="mgrSelect" style="margin:0">กำลังจัดการ:</label>
+        <select id="mgrSelect"></select>
+      </div>
+
+      <header class="mgr-head" id="mgrHead"></header>
+
+      <div class="warn-banner" id="defaultPwBanner" hidden>
+        <span>คุณยังใช้รหัสผ่านเริ่มต้น (รหัสพนักงาน) ซึ่งคนอื่นอาจเดาได้ กรุณาเปลี่ยนรหัสผ่าน</span>
+        <button class="btn sm" type="button" id="goChangePw">เปลี่ยนรหัสผ่าน</button>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true" data-tab="avail">เวลาว่าง</button>
+        <button role="tab" aria-selected="false" data-tab="bookings">การจอง</button>
+        <button role="tab" aria-selected="false" data-tab="team">ทีม</button>
+        <button role="tab" aria-selected="false" data-tab="profile">โปรไฟล์</button>
+        <button role="tab" aria-selected="false" data-tab="managers" id="managersTab" hidden>ผู้จัดการทั้งหมด</button>
+        <span style="flex:1"></span>
+        <button type="button" id="logout" class="linkish" style="color:var(--muted)">ออกจากระบบ</button>
+      </div>
+
+      <!-- เวลาว่าง -->
+      <div data-panel="avail" class="needs-manager">
+        <section class="card">
+          <h2>เพิ่มเวลาว่าง</h2>
+          <form id="availForm">
+            <div class="row">
+              <div class="grow"><label for="aDate">วันที่</label><input type="date" id="aDate" required></div>
+              <div><label for="aStart">ตั้งแต่</label><select id="aStart"></select></div>
+              <div><label for="aEnd">ถึง</label><select id="aEnd"></select></div>
+              <button class="btn" type="submit">+ เพิ่ม</button>
+            </div>
+            <p class="hint" id="availPreview"></p>
+          </form>
+        </section>
+        <section class="card">
+          <h2>เวลาว่างที่กำหนดไว้</h2>
+          <div id="availList"></div>
+        </section>
+      </div>
+
+      <!-- การจอง -->
+      <div data-panel="bookings" class="needs-manager" hidden>
+        <section class="card">
+          <h2>การจองที่จะถึง</h2>
+          <div id="bookingList"></div>
+        </section>
+      </div>
+
+      <!-- ทีม -->
+      <div data-panel="team" class="needs-manager" hidden>
+        <section class="card">
+          <h2>รายชื่อลูกทีม</h2>
+          <form id="memberForm" class="row" style="margin-bottom:16px">
+            <div class="grow"><label for="mName">ชื่อ</label><input type="text" id="mName" placeholder="ชื่อ-นามสกุล" required></div>
+            <div class="grow"><label for="mEmail">อีเมล (ไม่บังคับ)</label><input type="email" id="mEmail" placeholder="name@company.com"></div>
+            <button class="btn" type="submit">+ เพิ่ม</button>
+          </form>
+          <div id="memberList"></div>
+          <p class="hint">ลูกทีมจะเลือกชื่อจากรายการนี้ตอนจองเวลากับคุณ · ถ้าใส่อีเมล ลูกทีมจะได้อีเมลยืนยันเมื่อจองสำเร็จ และอีเมลแจ้งเมื่อคุณยกเลิกนัด</p>
+        </section>
+      </div>
+
+      <!-- โปรไฟล์ -->
+      <div data-panel="profile" class="needs-manager" hidden>
+        <section class="card">
+          <h2>โปรไฟล์ผู้จัดการ</h2>
+          <form id="profileForm" class="profile">
+            <div class="photo-col">
+              <div id="photoPreview"></div>
+              <label class="btn ghost sm" style="margin:0">
+                เปลี่ยนรูป<input type="file" id="photoFile" accept="image/*" hidden>
+              </label>
+              <button type="button" class="linkish danger" id="photoRemove">ลบรูป</button>
+            </div>
+            <div class="fields">
+              <div><label for="pName">ชื่อที่แสดง</label><input type="text" id="pName" required></div>
+              <div><label for="pTitle">ตำแหน่ง</label><input type="text" id="pTitle" placeholder="เช่น ผู้จัดการฝ่ายขาย"></div>
+              <div>
+                <label for="pEmail">อีเมลรับการแจ้งเตือน</label>
+                <input type="email" id="pEmail" placeholder="name@company.com">
+                <p class="hint" style="margin-top:4px">ส่งอีเมลแจ้งเมื่อลูกทีมจอง ย้ายเวลา หรือยกเลิก · เว้นว่างถ้าไม่ต้องการรับ</p>
+              </div>
+              <hr style="border:0;border-top:1px solid var(--line);margin:4px 0">
+              <div>
+                <label for="pUser">ชื่อผู้ใช้ (สำหรับเข้าสู่ระบบ)</label>
+                <input type="text" id="pUser" autocomplete="username" autocapitalize="off" spellcheck="false">
+                <p class="hint" style="margin-top:4px" id="pEmpHint"></p>
+              </div>
+              <div class="row">
+                <div class="grow">
+                  <label for="pPw">รหัสผ่านใหม่</label>
+                  <input type="password" id="pPw" autocomplete="new-password" placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน">
+                </div>
+                <div class="grow">
+                  <label for="pPw2">ยืนยันรหัสผ่านใหม่</label>
+                  <input type="password" id="pPw2" autocomplete="new-password">
+                </div>
+              </div>
+              <div><button class="btn" type="submit">บันทึก</button></div>
+            </div>
+          </form>
+        </section>
+      </div>
+
+      <!-- ผู้จัดการทั้งหมด (รหัสหลัก) -->
+      <div data-panel="managers" hidden>
+        <section class="card">
+          <h2>เพิ่มผู้จัดการ</h2>
+          <form id="newMgrForm" class="row">
+            <div class="grow"><label for="nName">ชื่อ</label><input type="text" id="nName" required></div>
+            <div class="grow"><label for="nTitle">ตำแหน่ง</label><input type="text" id="nTitle"></div>
+            <div class="grow"><label for="nEmail">อีเมลรับแจ้งเตือน</label><input type="email" id="nEmail"></div>
+            <div class="grow"><label for="nEmp">รหัสพนักงาน</label><input type="text" id="nEmp" autocomplete="off" required></div>
+            <button class="btn" type="submit">+ เพิ่ม</button>
+          </form>
+          <p class="hint">ชื่อผู้ใช้และรหัสผ่านเริ่มต้น = รหัสพนักงาน · ใส่รูปได้ที่แท็บ "โปรไฟล์" หลังเพิ่มแล้ว หรือให้ผู้จัดการเข้าไปใส่เอง</p>
+        </section>
+        <section class="card">
+          <h2>ผู้จัดการทั้งหมด</h2>
+          <div id="mgrList"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <dialog id="confirm">
+    <h3 class="dlg-title"></h3>
+    <div class="dlg-body"></div>
+    <div class="dlg-actions">
+      <button class="btn ghost dlg-cancel" type="button">ไม่ใช่</button>
+      <button class="btn dlg-ok" type="button">ยืนยัน</button>
+    </div>
+  </dialog>
+
+  <script src="config.js"></script>
+  <script src="core.js"></script>
+  <script src="mock.js"></script>
+  <script src="api.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>จองเวลา Coaching</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="wrap">
+    <!-- Step 1: เลือกผู้จัดการ -->
+    <section id="viewManagers">
+      <header class="top">
+        <h1 id="title">จองเวลา Coaching</h1>
+        <p id="subtitle"></p>
+      </header>
+      <div id="managerGrid" class="manager-grid"><div class="loading">กำลังโหลด…</div></div>
+    </section>
+
+    <!-- Step 2: เวลาว่างของผู้จัดการ -->
+    <section id="viewSlots" hidden>
+      <a href="#" class="back">← เลือกผู้จัดการท่านอื่น</a>
+      <header class="mgr-head" id="mgrHead"></header>
+
+      <div id="mine"></div>
+
+      <div class="toolbar">
+        <div class="legend">
+          <span><i class="l-free"></i>ว่าง (กดเพื่อจอง)</span>
+          <span><i class="l-booked"></i>จองแล้ว</span>
+          <span><i class="l-mine"></i>การจองของคุณ</span>
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn ghost sm" id="lookup" type="button">การจองของฉัน</button>
+          <button class="btn ghost sm" id="refresh" type="button" aria-label="รีเฟรช">↻</button>
+        </div>
+      </div>
+
+      <div id="days"></div>
+    </section>
+  </main>
+
+  <!-- Step 3: pop-up เลือกชื่อ -->
+  <dialog id="pick" aria-labelledby="pickTitle">
+    <form method="dialog" id="pickForm">
+      <h3 class="dlg-title" id="pickTitle">คุณคือใคร?</h3>
+      <div class="pick-slot" id="pickSlot"></div>
+      <div class="name-list" id="nameList" role="radiogroup" aria-labelledby="pickTitle"></div>
+      <p class="hint" id="pickHint"></p>
+      <div class="dlg-actions">
+        <button class="btn ghost" type="button" id="pickCancel">ยกเลิก</button>
+        <button class="btn" type="submit" id="pickOk" disabled>ยืนยันการจอง</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="confirm">
+    <h3 class="dlg-title"></h3>
+    <div class="dlg-body"></div>
+    <div class="dlg-actions">
+      <button class="btn ghost dlg-cancel" type="button">ไม่ใช่</button>
+      <button class="btn dlg-ok" type="button">ยืนยัน</button>
+    </div>
+  </dialog>
+
+  <script src="config.js"></script>
+  <script src="core.js"></script>
+  <script src="mock.js"></script>
+  <script src="api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

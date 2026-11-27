@@ -80,3 +80,45 @@ window.ui = {
     document.body.prepend(b);
   },
 };
+
+/* ---------- Auto-update ----------
+ * GitHub Pages ให้เบราว์เซอร์จำไฟล์ไว้ได้ 10 นาที จึงเช็ก version.json (ไม่ผ่านแคช) เทียบกับเวอร์ชันของหน้านี้
+ * - ตอนเปิดหน้า: ถ้ามีเวอร์ชันใหม่ รีโหลดให้อัตโนมัติ (ยังไม่มีอะไรให้เสีย)
+ * - ระหว่างใช้งาน (กลับมาที่แท็บนี้): แสดงแถบให้กดโหลดใหม่เอง เพื่อไม่ให้ข้อมูลที่กรอกค้างไว้หาย
+ * เลขเวอร์ชันถูกตั้งด้วย tools/bump_version.py
+ */
+(function () {
+  const meta = document.querySelector('meta[name="app-version"]');
+  if (!meta || location.protocol === 'file:') return;
+  const current = meta.content;
+  const GUARD = 'coaching-reloaded-for';
+
+  function latest() {
+    return fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => (j && j.version) || null)
+      .catch(() => null);
+  }
+
+  function showUpdateBar() {
+    if (document.getElementById('updateBar')) return;
+    const bar = document.createElement('div');
+    bar.id = 'updateBar';
+    bar.className = 'update-bar';
+    bar.innerHTML = 'มีเว็บเวอร์ชันใหม่ <button type="button" class="btn sm">โหลดใหม่</button>';
+    bar.querySelector('button').onclick = () => location.reload();
+    document.body.prepend(bar);
+  }
+
+  latest().then(v => {
+    if (!v || v === current) return;
+    if (sessionStorage.getItem(GUARD) === v) { showUpdateBar(); return; } // กันรีโหลดวนถ้า GitHub ยังอัปเดตไม่ทัน
+    sessionStorage.setItem(GUARD, v);
+    location.reload();
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) return;
+    latest().then(v => { if (v && v !== current) showUpdateBar(); });
+  });
+})();

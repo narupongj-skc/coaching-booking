@@ -12,8 +12,12 @@
   $('subtitle').textContent = cfg.SUBTITLE || '';
   ui.demoBanner();
 
-  const nameKey = mid => 'coaching-name:' + mid;
-  const rememberedName = () => (managerId && localStorage.getItem(nameKey(managerId))) || '';
+  // ชื่อที่ใช้แสดงแถบ "การจองของ…" ตั้งค่าเฉพาะเมื่อกด "การจองของฉัน" แล้วเลือกชื่อ
+  // เก็บไว้ในหน่วยความจำเท่านั้น หายเมื่อเปลี่ยนผู้จัดการหรือรีเฟรชหน้า (กันชื่อค้างเมื่อใช้เครื่องร่วมกัน)
+  let viewer = '';
+
+  // ล้างชื่อที่เวอร์ชันก่อนเคยจำไว้ในเครื่อง
+  Object.keys(localStorage).filter(k => k.indexOf('coaching-name:') === 0).forEach(k => localStorage.removeItem(k));
   const whenText = b => ui.thaiDate(b.date) + ' เวลา ' + b.start + '–' + b.end + ' น.';
 
   /* ================= Routing ================= */
@@ -23,6 +27,7 @@
     $('viewManagers').hidden = !!managerId;
     $('viewSlots').hidden = !managerId;
     window.scrollTo(0, 0);
+    viewer = '';
     if (managerId) {
       $('mgrHead').innerHTML = '';
       $('mine').innerHTML = '';
@@ -58,7 +63,7 @@
   async function loadSlots() {
     const mid = managerId;
     try {
-      const s = await api.call('state', { managerId: mid, name: rememberedName() });
+      const s = await api.call('state', { managerId: mid, name: viewer });
       if (mid !== managerId) return; // ผู้ใช้เปลี่ยนหน้าไปแล้ว
       state = s;
       renderSlots();
@@ -74,14 +79,19 @@
       '<div><div class="mh-label">Coaching กับ</div><h1>' + esc(m.name) + '</h1>' +
       (m.title ? '<p>' + esc(m.title) + '</p>' : '') + '</div>';
 
-    const mine = state.myBooking;
-    const who = rememberedName();
+    const mine = viewer ? state.myBooking : null;
+    const who = viewer;
     $('mine').innerHTML = mine
       ? '<div class="mine-banner"><div><div class="label">การจองของ ' + esc(who) + '</div>' +
         '<div class="when">' + esc(whenText(mine)) + '</div></div>' +
-        '<button class="btn sm" type="button" id="cancelMine">ยกเลิกการจอง</button></div>'
+        '<div class="toolbar-actions">' +
+        '<button class="btn sm" type="button" id="cancelMine">ยกเลิกการจอง</button>' +
+        '<button class="btn sm" type="button" id="hideMine" aria-label="ซ่อนแถบนี้">ซ่อน</button></div></div>'
       : '';
-    if (mine) $('cancelMine').onclick = () => cancel(mine, who);
+    if (mine) {
+      $('cancelMine').onclick = () => cancel(mine, who);
+      $('hideMine').onclick = () => { viewer = ''; loadSlots(); };
+    }
 
     if (!state.slots.length) {
       $('days').innerHTML = '<div class="card empty">ผู้จัดการท่านนี้ยังไม่มีเวลาว่างในขณะนี้</div>';
@@ -154,7 +164,6 @@
     busy = true;
     try {
       const res = await api.call('book', { managerId, name, date: slot.date, start: slot.start });
-      localStorage.setItem(nameKey(managerId), name);
       ui.toast(res.moved
         ? 'ย้ายนัดจาก ' + res.moved.start + ' (' + ui.thaiDate(res.moved.date, { day: 'numeric', month: 'short' }) + ') มาเป็นเวลานี้แล้ว'
         : 'จองเรียบร้อย');
@@ -188,7 +197,7 @@
   $('lookup').addEventListener('click', async () => {
     const name = await pickName(null);
     if (!name) return;
-    localStorage.setItem(nameKey(managerId), name);
+    viewer = name;
     await loadSlots();
     if (!state.myBooking) ui.toast(name + ' ยังไม่มีการจองกับผู้จัดการท่านนี้');
   });

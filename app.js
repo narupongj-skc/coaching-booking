@@ -112,8 +112,8 @@
     return new Promise(resolve => {
       const dlg = $('pick');
       const team = state.team;
-      const pre = rememberedName();
-      let chosen = team.indexOf(pre) >= 0 ? pre : '';
+      // ไม่เลือกชื่อไว้ล่วงหน้า ให้ผู้ใช้กดเลือกเองทุกครั้ง (กันจองผิดชื่อเมื่อใช้เครื่องร่วมกัน)
+      let chosen = '';
 
       $('pickTitle').textContent = 'คุณคือใคร?';
       $('pickSlot').innerHTML = slot
